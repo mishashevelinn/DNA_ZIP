@@ -17,16 +17,34 @@ Nucleic_acid toNA(unsigned char c) {
 
 /******************************************************************************/
 unsigned char toChar(Nucleic_acid c) {
-	if(c!=0 &&  c!=1 && c!=2 && c!=3 ){
-	    printf("Undefined Value Error\n");
-	    exit(1);
-	}
-    return (unsigned char) c;
+    switch (c) {
+        case 0: return 'A';
+        case 1: return  'C';
+        case 2: return 'G';
+        case 3: return 'T';
+        default: printf("Undefined Value Error\n");
+    }
 }
 
 /******************************************************************************/
 unsigned int dna_seq_length(const char* unzipped_file) {
-	// YOUR CODE HERE
+    int counter = 0;
+    char c;
+    char buffer[MAX_HEADER_LENGTH];
+    FILE *file_ptr;
+
+    file_ptr=fopen(unzipped_file, "r");
+    fgets(buffer, MAX_HEADER_LENGTH, file_ptr); //skip the first line in counting
+    if (file_ptr==NULL){
+        printf("FILE NOT FOUND");
+        exit(0);
+    }
+    while((c = getc(file_ptr)) != EOF){
+        if(c != '\n')
+            counter++;
+    }
+    fclose(unzipped_file);
+    return counter;
 }
 
 /******************************************************************************/
