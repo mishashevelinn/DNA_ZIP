@@ -3,56 +3,110 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum {A=0, C=1, G=2, T=3} Nucleic_acid;
 
 /******************************************************************************/
 Nucleic_acid toNA(unsigned char c) {
-    if(c!=A &&  c!=C && c!=G && c!=T) {
-        printf("Gene Format Error\n");
-        exit(1);
+    switch (c) {
+        case 'A' :
+            return A;
+        case 'C' :
+            return C;
+        case 'G' :
+            return G;
+        case 'T' :
+            return T;
+        default:
+            printf("Format Error");
+            exit(1);
     }
-    return (Nucleic_acid) c;
-    }
-
+}
 
 /******************************************************************************/
 unsigned char toChar(Nucleic_acid c) {
     switch (c) {
-        case 0: return 'A';
-        case 1: return  'C';
-        case 2: return 'G';
-        case 3: return 'T';
-        default: printf("Undefined Value Error\n");
+        case 0:
+            return 'A';
+        case 1:
+            return 'C';
+        case 2:
+            return 'G';
+        case 3:
+            return 'T';
+        default:
+            printf("Undefined Value Error\n");
+            exit(1);
     }
 }
 
 /******************************************************************************/
-unsigned int dna_seq_length(const char* unzipped_file) {
+unsigned int dna_seq_length(const char *unzipped_file) {
     int counter = 0;
     char c;
     char buffer[MAX_HEADER_LENGTH];
     FILE *file_ptr;
-
-    file_ptr=fopen(unzipped_file, "r");
-    fgets(buffer, MAX_HEADER_LENGTH, file_ptr); //skip the first line in counting
-    if (file_ptr==NULL){
+    file_ptr = fopen(unzipped_file, "r");
+    if (file_ptr == NULL) {
         printf("FILE NOT FOUND");
         exit(0);
     }
-    while((c = getc(file_ptr)) != EOF){
-        if(c != '\n')
+
+    fgets(buffer, MAX_HEADER_LENGTH, file_ptr); //skip the first line in counting
+    while ((c = getc(file_ptr)) != EOF) {
+        if (c != '\n')
             counter++;
     }
-    fclose(unzipped_file);
+    fclose(file_ptr);
     return counter;
 }
 
 /******************************************************************************/
-void zip(const char* unzipped_file, const char* zipped_file) {
-	// YOUR CODE HERE
+void zip(const char *unzipped_file, const char *zipped_file) {
+    unsigned char buff = 0;
+    char c;
+    char *header = NULL;
+    unsigned int seq_len;
+    Nucleic_acid NA;
+    FILE *file, *bfile;
+
+    size_t header_size;
+    ssize_t line_length;
+
+    file = fopen(unzipped_file, "r");
+    bfile = fopen(zipped_file, "wb");
+    if (file == NULL) {
+        printf("FILE NOT FOUND");
+        exit(0);
+    }
+
+    line_length = getline(&header, &header_size, file);
+    fwrite(&line_length, sizeof(unsigned char), 1, bfile);
+    fprintf(bfile, header, "%s");
+
+    seq_len = dna_seq_length(unzipped_file);
+
+    for (int j = 0; j < seq_len; j += 4) {
+        for (int i = 0; i <= 6; i += 2) {
+            if ((c = getc(file)) != EOF) {
+                {
+                    if (c == '\n') {
+                        if ((c=getc(file)) == EOF)
+                            break;
+                    }
+                    NA = toNA(c);
+                    NA <<= i;
+                    buff |= NA;
+                }
+            }
+        }
+        fwrite(&buff, sizeof(unsigned char), 1, bfile);
+        buff = 0;
+    }
+    fclose(file);
+    fclose(bfile);
 }
 
+
 /******************************************************************************/
-void unzip(const char* zipped_file, const char* unzipped_file) {
-	// YOUR CODE HERE
+void unzip(const char *zipped_file, const char *unzipped_file) {
+    // YOUR CODE HERE
 }
