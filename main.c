@@ -3,6 +3,7 @@
 #include <string.h>
 
 int main() {
-    unzip("zip", "newfile");
-    return 0;
+   zip("sample", "zip");
+   unzip("zip", "newfile");
+   return 0;
 }

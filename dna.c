@@ -83,7 +83,7 @@ void zip(const char *unzipped_file, const char *zipped_file) {
     fprintf(bfile, header, "%s");                          //writing header itself
 
     seq_len = dna_seq_length(unzipped_file);
-    fwrite(&seq_len, sizeof(unsigned int), 1, bfile);   //writing sequence length
+    fwrite(&seq_len, sizeof(unsigned int ), 1, bfile);   //writing sequence length
 
 
     for (int j = 0; j < seq_len; j += 4) {
@@ -112,37 +112,41 @@ void zip(const char *unzipped_file, const char *zipped_file) {
 void unzip(const char *zipped_file, const char *unzipped_file) {
     Nucleic_acid c = 0;
     unsigned int seq_len;
-    int header_size;
+    int header_size=0;
     FILE *file, *bfile;
 
-    unsigned char buff = 0;
-    unsigned char mask = 11;
+    unsigned char buff=0;
+    unsigned char mask = 0b11;
     unsigned char temp = 0;
-    char acid[4];
+
     bfile = fopen(zipped_file, "rb");
     file = fopen(unzipped_file, "w");
 
     fread(&header_size, sizeof(unsigned char), 1, bfile);
     char header[header_size];
+    header[header_size]='\0';
 
-    fread(header, sizeof(unsigned char), header_size, bfile);
-
-    fputs(header, file);
+    fread(header, sizeof(unsigned char), header_size , bfile);
 
     fread(&seq_len, sizeof(unsigned int), 1, bfile);
 
+    fputs(header, file);
+
     for (int i = 0; i < seq_len; i += 4) {
+        if((i!=0)&&(i%80==0))
+                fputc('\n', file);
+        fread(&buff, sizeof(unsigned char), 1, bfile);
         for (int j = 0; j<=6; j+=2){
-            fread(&buff, sizeof(unsigned char), 1, bfile);
+
             mask<<=j;
-            c = mask & buff;
-            fputc(toChar(c), file);
-            mask=11;
+            mask &= buff;
+            mask>>=j;
+            fputc(toChar(mask), file);
+            mask=0b11;
         }
     }
 
 }
-
 
 
 
