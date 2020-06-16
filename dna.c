@@ -79,17 +79,19 @@ void zip(const char *unzipped_file, const char *zipped_file) {
     }
 
     line_length = getline(&header, &header_size, file);
-    fwrite(&line_length, sizeof(unsigned char), 1, bfile);
-    fprintf(bfile, header, "%s");
+    fwrite(&line_length, sizeof(unsigned char), 1, bfile);//writing header length
+    fprintf(bfile, header, "%s");                          //writing header itself
 
     seq_len = dna_seq_length(unzipped_file);
+    fwrite(&seq_len, sizeof(unsigned int), 1, bfile);   //writing sequence length
+
 
     for (int j = 0; j < seq_len; j += 4) {
         for (int i = 0; i <= 6; i += 2) {
             if ((c = getc(file)) != EOF) {
                 {
                     if (c == '\n') {
-                        if ((c=getc(file)) == EOF)
+                        if ((c = getc(file)) == EOF)
                             break;
                     }
                     NA = toNA(c);
@@ -108,5 +110,47 @@ void zip(const char *unzipped_file, const char *zipped_file) {
 
 /******************************************************************************/
 void unzip(const char *zipped_file, const char *unzipped_file) {
-    // YOUR CODE HERE
+    Nucleic_acid c = 0;
+    unsigned int seq_len;
+    int header_size;
+    FILE *file, *bfile;
+
+    unsigned char buff = 0;
+    unsigned char mask = 11;
+    unsigned char temp = 0;
+    char acid[4];
+    bfile = fopen(zipped_file, "rb");
+    file = fopen(unzipped_file, "w");
+
+    fread(&header_size, sizeof(unsigned char), 1, bfile);
+    char header[header_size];
+
+    fread(header, sizeof(unsigned char), header_size, bfile);
+
+    fputs(header, file);
+
+    fread(&seq_len, sizeof(unsigned int), 1, bfile);
+
+    for (int i = 0; i < seq_len; i += 4) {
+        for (int j = 0; j<=6; j+=2){
+            fread(&buff, sizeof(unsigned char), 1, bfile);
+            mask<<=j;
+            c = mask & buff;
+            fputc(toChar(c), file);
+            mask=11;
+        }
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
