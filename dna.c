@@ -85,9 +85,9 @@ void zip(const char *unzipped_file, const char *zipped_file) {
     seq_len = dna_seq_length(unzipped_file);
     fwrite(&seq_len, sizeof(unsigned int ), 1, bfile);   //writing sequence length
 
-
-    for (int j = 0; j < seq_len; j += 4) {
-        for (int i = 0; i <= 6; i += 2) {
+    int i, j;
+    for (j = 0; j < seq_len; j += 4) {
+        for (i = 0; i <= 6; i += 2) {
             if ((c = getc(file)) != EOF) {
                 {
                     if (c == '\n') {
@@ -105,6 +105,7 @@ void zip(const char *unzipped_file, const char *zipped_file) {
     }
     fclose(file);
     fclose(bfile);
+    free(header);
 }
 
 
@@ -131,17 +132,17 @@ void unzip(const char *zipped_file, const char *unzipped_file) {
     fread(&seq_len, sizeof(unsigned int), 1, bfile);
 
     fputs(header, file);
-
-    for (int i = 0; i < seq_len; i += 4) {
+    int i, j;
+    for (i = 0; i < seq_len; i += 4) {
         if((i!=0)&&(i%80==0))
                 fputc('\n', file);
         fread(&buff, sizeof(unsigned char), 1, bfile);
-        for (int j = 0; j<=6; j+=2){
+        for (j = 0; j<=6; j+=2){
 
             mask<<=j;
-            mask &= buff;
-            mask>>=j;
-            fputc(toChar(mask), file);
+            c = mask & buff;
+            c>>=j;
+            fputc(toChar(c), file);
             mask=0b11;
         }
     }
