@@ -1,4 +1,4 @@
-#   iqoni                                               clude "dna.h"
+#include "dna.h"
 #include <stdio.h>
 #include <string.h>
 
